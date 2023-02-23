@@ -1,0 +1,70 @@
+<html>
+<head>
+    <title>Canvas on localhost</title>
+</head>
+
+<body>
+    <canvas id="canvas" height="1080" width="1920"></canvas>
+</body>
+<script>
+
+window.addEventListener("DOMContentLoaded", function() {
+    // Grab elements, create settings, etc.
+    var canvas = document.getElementById("canvas"),
+        context = canvas.getContext("2d"),
+        // we don't need to append the video to the document
+        video = document.createElement("video"),
+        videoObj = 
+        navigator.getUserMedia || navigator.mozGetUserMedia ? // our browser is up to date with specs ?
+        { 
+        video: {
+            width: { min: 1920,  max: 1920 },
+            height: { min: 1080,  max: 1080 },
+            require: ['width', 'height']
+            }
+        }:
+        {
+        video: {
+            mandatory: {
+                minWidth: 1920,
+                minHeight: 1080,
+                maxWidth: 1920,
+                maxHeight: 1080
+            }
+        }
+    },
+    errBack = function(error) {
+        console.log("Video capture error: ", error.code); 
+    };
+    // create a crop object that will be calculated on load of the video
+    var crop;
+    // create a variable that will enable us to stop the loop.
+    var raf;
+    
+    navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+    // Put video listeners into place
+        navigator.getUserMedia(videoObj, function(stream) {
+            video.srcObject = stream;
+            video.onplaying = function(){
+                
+                // call our loop only when the video is playing
+                raf = requestAnimationFrame(loop);
+                };
+            video.onpause = function(){
+                // stop the loop
+                cancelAnimationFrame(raf);
+                }
+            video.play();
+        }, errBack);
+
+    function loop(){
+       context.drawImage(video, 0, 0, 1920, 1080, 0, 0, canvas.width, canvas.height);
+       raf = requestAnimationFrame(loop);
+    }
+// now that our video is drawn correctly, we can do...
+context.translate(canvas.width, 0);
+context.scale(-1,1);
+
+}, false);
+</script>
+</html>
